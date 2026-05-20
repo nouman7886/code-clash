@@ -1,6 +1,6 @@
 const BASE =
   import.meta.env.VITE_API_URL ||
-  'https://code-clash-jkdd.onrender.com';
+  'https://code-clash-jkdd.onrender.com/api';
 
 async function request(method, path, body) {
 

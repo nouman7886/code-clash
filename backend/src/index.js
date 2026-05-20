@@ -54,7 +54,7 @@ setupSocket(io, prisma);
 // ── Start ─────────────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 3001;
 httpServer.listen(PORT, () => {
-  console.log(`\n🚀  Code Clash backend  →  http://localhost:${PORT}`);
+  console.log(`\n🚀  Code Clash backend  →  https://code-clash-jkdd.onrender.com`);
   console.log(`📡  Socket.IO ready for real-time connections`);
   console.log(`🗄️   Database: ${process.env.DATABASE_URL}\n`);
 });

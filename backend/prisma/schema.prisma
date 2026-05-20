@@ -1,0 +1,79 @@
+// ── Prisma Schema ──────────────────────────────────────────────────────────────
+// Run: cd backend && npm run db:push   to apply changes to dev.db
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ── User ──────────────────────────────────────────────────────────────────────
+// No auth required. clientId from localStorage becomes the primary key.
+model User {
+  id          String            @id @default(cuid())
+  displayName String
+  createdAt   DateTime          @default(now())
+
+  challenges   Challenge[]
+  submissions  Submission[]
+  participants RoomParticipant[]
+}
+
+// ── Challenge ─────────────────────────────────────────────────────────────────
+model Challenge {
+  id           String   @id @default(cuid())
+  title        String
+  problem      String
+  constraints  String?
+  sampleInput  String?
+  sampleOutput String?
+  difficulty   String              // "Beginner" | "Intermediate" | "Advanced"
+  tags         String              // JSON-serialised string[], e.g. '["Arrays","Strings"]'
+  creatorId    String
+  creator      User     @relation(fields: [creatorId], references: [id])
+  rooms        Room[]
+  createdAt    DateTime @default(now())
+}
+
+// ── Room ──────────────────────────────────────────────────────────────────────
+// One competition session for a challenge. Max 4 participants (1 creator + 3).
+model Room {
+  id          String            @id @default(cuid())
+  challengeId String
+  challenge   Challenge         @relation(fields: [challengeId], references: [id])
+  status      String            @default("waiting") // "waiting"|"active"|"ended"
+  startedAt   DateTime?
+  endedAt     DateTime?
+  createdAt   DateTime          @default(now())
+
+  participants RoomParticipant[]
+  submissions  Submission[]
+}
+
+// ── RoomParticipant ───────────────────────────────────────────────────────────
+model RoomParticipant {
+  id       String   @id @default(cuid())
+  roomId   String
+  room     Room     @relation(fields: [roomId], references: [id])
+  userId   String
+  user     User     @relation(fields: [userId], references: [id])
+  joinedAt DateTime @default(now())
+
+  @@unique([roomId, userId])
+}
+
+// ── Submission ────────────────────────────────────────────────────────────────
+// Code is saved but NOT executed. Ranked by earliest submittedAt time.
+model Submission {
+  id          String   @id @default(cuid())
+  roomId      String
+  room        Room     @relation(fields: [roomId], references: [id])
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  code        String
+  language    String              // "java"|"python"|"cpp"|"javascript"
+  submittedAt DateTime @default(now())
+}

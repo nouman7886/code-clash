@@ -1,0 +1,65 @@
+// ── Code Clash — Backend Entry Point ─────────────────────────────────────────
+require('dotenv').config();
+
+const express      = require('express');
+const { createServer } = require('http');
+const { Server }   = require('socket.io');
+const cors         = require('cors');
+const { PrismaClient } = require('@prisma/client');
+
+// Routes
+const userRoutes       = require('./routes/users');
+const challengeRoutes  = require('./routes/challenges');
+const roomRoutes       = require('./routes/rooms');
+const submissionRoutes = require('./routes/submissions');
+const executeRoutes = require("./routes/execute");
+
+// Real-time setup
+const setupSocket = require('./socket');
+
+// ── App & HTTP server ─────────────────────────────────────────────────────────
+const app        = express();
+const httpServer = createServer(app);
+const prisma     = new PrismaClient();
+
+const io = new Server(httpServer, {
+  cors: {
+    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  },
+});
+
+// ── Middleware ────────────────────────────────────────────────────────────────
+app.use(cors({ origin: process.env.FRONTEND_URL || 'http://localhost:5173' }));
+app.use(express.json({ limit: '2mb' }));  // code submissions can be large
+
+// Share prisma + io with route handlers
+app.locals.prisma = prisma;
+app.locals.io     = io;
+
+// ── REST Routes ───────────────────────────────────────────────────────────────
+app.use('/api/users',       userRoutes);
+app.use('/api/challenges',  challengeRoutes);
+app.use("/api/execute", executeRoutes);
+app.use('/api/rooms',       roomRoutes);
+app.use('/api/submissions', submissionRoutes);
+
+app.get('/api/health', (_req, res) =>
+  res.json({ status: 'ok', timestamp: new Date().toISOString() })
+);
+
+// ── Socket.IO ─────────────────────────────────────────────────────────────────
+setupSocket(io, prisma);
+
+// ── Start ─────────────────────────────────────────────────────────────────────
+const PORT = process.env.PORT || 3001;
+httpServer.listen(PORT, () => {
+  console.log(`\n🚀  Code Clash backend  →  http://localhost:${PORT}`);
+  console.log(`📡  Socket.IO ready for real-time connections`);
+  console.log(`🗄️   Database: ${process.env.DATABASE_URL}\n`);
+});
+
+process.on('SIGINT', async () => {
+  await prisma.$disconnect();
+  process.exit(0);
+});

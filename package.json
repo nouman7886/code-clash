@@ -1,0 +1,15 @@
+{
+  "name": "code-clash",
+  "version": "1.0.0",
+  "description": "Real-time coding competition platform",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install",
+    "setup": "npm run install:all && cd backend && cp .env.example .env && npm run db:push"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.1"
+  }
+}

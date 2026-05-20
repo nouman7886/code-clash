@@ -1,0 +1,98 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Base ─────────────────────────────────────────────────────────────────── */
+@layer base {
+  *, *::before, *::after { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    @apply bg-clash-bg text-clash-text font-body;
+    background-image:
+      linear-gradient(rgba(0,229,255,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,255,0.025) 1px, transparent 1px);
+    background-size: 40px 40px;
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+
+  ::-webkit-scrollbar        { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track  { background: #0d1424; }
+  ::-webkit-scrollbar-thumb  { background: #1a2540; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #00e5ff50; }
+}
+
+/* ── Components ───────────────────────────────────────────────────────────── */
+@layer components {
+
+  .btn-primary {
+    @apply inline-flex items-center gap-2 px-5 py-2.5
+           font-display font-semibold text-sm tracking-wide
+           bg-clash-cyan text-clash-bg rounded-lg
+           transition-all duration-200
+           hover:brightness-110 hover:shadow-[0_0_20px_rgba(0,229,255,0.4)]
+           active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center gap-2 px-5 py-2.5
+           font-display font-semibold text-sm tracking-wide
+           border border-clash-border text-clash-text rounded-lg
+           bg-clash-surface/60 backdrop-blur
+           transition-all duration-200
+           hover:border-clash-cyan/50 hover:text-clash-cyan
+           active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed;
+  }
+
+  .card {
+    @apply bg-clash-surface border border-clash-border rounded-xl
+           transition-all duration-300;
+    background-image: linear-gradient(135deg, rgba(0,229,255,0.03) 0%, transparent 60%);
+  }
+
+  .card-hover {
+    @apply card hover:border-clash-cyan/30
+           hover:shadow-[0_0_30px_rgba(0,229,255,0.08)]
+           hover:-translate-y-0.5 cursor-pointer;
+  }
+
+  .input {
+    @apply w-full px-4 py-2.5 rounded-lg
+           bg-clash-muted border border-clash-border
+           text-clash-text placeholder-clash-dim font-body text-sm
+           transition-all duration-200
+           focus:outline-none focus:border-clash-cyan/60
+           focus:shadow-[0_0_0_3px_rgba(0,229,255,0.1)];
+  }
+
+  .textarea { @apply input resize-none; }
+
+  .section-title {
+    @apply font-display font-bold text-2xl text-clash-text tracking-wide;
+  }
+
+  .text-glow-cyan { text-shadow: 0 0 20px rgba(0,229,255,0.6); }
+
+  .dot-online {
+    @apply inline-block w-2 h-2 rounded-full bg-clash-green
+           shadow-[0_0_6px_rgba(0,255,136,0.8)] animate-pulse-slow;
+  }
+
+  .dot-typing {
+    @apply inline-block w-2 h-2 rounded-full bg-clash-amber
+           shadow-[0_0_6px_rgba(255,183,0,0.8)] animate-pulse;
+  }
+}
+
+/* ── Scanline decoration ──────────────────────────────────────────────────── */
+@keyframes scanline {
+  0%   { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+.scanline {
+  position: fixed; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(0,229,255,0.08), transparent);
+  animation: scanline 10s linear infinite;
+  pointer-events: none; z-index: 9999;
+}

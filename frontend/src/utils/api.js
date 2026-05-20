@@ -1,5 +1,5 @@
 // Thin fetch wrapper. Vite proxies /api → localhost:3001 in development.
-const BASE = '/api';
+const BASE = process.env.REACT_APP_API_URL || 'https://code-clash-jkdd.onrender.com';
 
 async function request(method, path, body) {
   const res  = await fetch(`${BASE}${path}`, {

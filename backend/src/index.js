@@ -24,13 +24,13 @@ const prisma     = new PrismaClient();
 
 const io = new Server(httpServer, {
   cors: {
-    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    origin: process.env.FRONTEND_URL || 'https://code-clash-self.vercel.app',
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
   },
 });
 
 // ── Middleware ────────────────────────────────────────────────────────────────
-app.use(cors({ origin: process.env.FRONTEND_URL || 'http://localhost:5173' }));
+app.use(cors({ origin: process.env.FRONTEND_URL || 'https://code-clash-self.vercel.app' }));
 app.use(express.json({ limit: '2mb' }));  // code submissions can be large
 
 // Share prisma + io with route handlers

@@ -8,12 +8,12 @@ export default defineConfig({
     proxy: {
       // Proxy REST API calls to the Express backend
       '/api': {
-        target: 'http://localhost:3001',
+        target: 'https://code-clash-jkdd.onrender.com',
         changeOrigin: true,
       },
       // Proxy Socket.IO WebSocket traffic
       '/socket.io': {
-        target: 'http://localhost:3001',
+        target: 'https://code-clash-jkdd.onrender.com',
         ws: true,
         changeOrigin: true,
       },

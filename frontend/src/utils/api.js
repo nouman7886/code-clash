@@ -1,6 +1,8 @@
-const BASE =
+const BACKEND_URL =
   import.meta.env.VITE_API_URL ||
-  'https://code-clash-jkdd.onrender.com/api';
+  'https://code-clash-jkdd.onrender.com';
+
+const BASE = `${BACKEND_URL.replace(/\/+$/, '').replace(/\/api$/, '')}/api`;
 
 async function request(method, path, body) {
 

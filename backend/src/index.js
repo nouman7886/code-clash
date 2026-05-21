@@ -17,6 +17,35 @@ const executeRoutes = require("./routes/execute");
 // Real-time setup
 const setupSocket = require('./socket');
 
+const normalizeOrigin = value => {
+  if (!value) return '';
+
+  const withProtocol = /^https?:\/\//i.test(value)
+    ? value
+    : `https://${value}`;
+
+  return withProtocol.replace(/\/+$/, '');
+};
+
+const frontendOrigin = normalizeOrigin(
+  process.env.FRONTEND_URL || 'https://code-clash-self.vercel.app'
+);
+
+const allowedOrigins = new Set([
+  frontendOrigin,
+  'https://code-clash-self.vercel.app',
+  'http://localhost:5173',
+]);
+
+const corsOrigin = (origin, callback) => {
+  if (!origin || allowedOrigins.has(normalizeOrigin(origin))) {
+    callback(null, true);
+    return;
+  }
+
+  callback(new Error(`CORS blocked for origin: ${origin}`));
+};
+
 // ── App & HTTP server ─────────────────────────────────────────────────────────
 const app        = express();
 const httpServer = createServer(app);
@@ -24,13 +53,13 @@ const prisma     = new PrismaClient();
 
 const io = new Server(httpServer, {
   cors: {
-    origin: process.env.FRONTEND_URL || 'https://code-clash-self.vercel.app',
+    origin: corsOrigin,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
   },
 });
 
 // ── Middleware ────────────────────────────────────────────────────────────────
-app.use(cors({ origin: process.env.FRONTEND_URL || 'https://code-clash-self.vercel.app' }));
+app.use(cors({ origin: corsOrigin }));
 app.use(express.json({ limit: '2mb' }));  // code submissions can be large
 
 // Share prisma + io with route handlers

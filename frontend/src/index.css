@@ -38,10 +38,19 @@
   .btn-secondary {
     @apply inline-flex items-center gap-2 px-5 py-2.5
            font-display font-semibold text-sm tracking-wide
-           border border-clash-border text-clash-text rounded-lg
-           bg-clash-surface/60 backdrop-blur
+           border border-white/20 text-clash-text rounded-lg
+           bg-transparent backdrop-blur
            transition-all duration-200
            hover:border-clash-cyan/50 hover:text-clash-cyan
+           active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed;
+  }
+
+  .btn-outline {
+    @apply inline-flex items-center gap-2 px-5 py-2.5
+           font-display font-semibold text-sm tracking-wide
+           border border-white/35 text-clash-text rounded-lg
+           bg-white/5 backdrop-blur transition-all duration-200
+           hover:border-clash-cyan/60 hover:text-clash-cyan hover:bg-clash-cyan/10
            active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed;
   }
 
@@ -83,6 +92,38 @@
     @apply inline-block w-2 h-2 rounded-full bg-clash-amber
            shadow-[0_0_6px_rgba(255,183,0,0.8)] animate-pulse;
   }
+
+  .feature-icon {
+    @apply inline-flex h-10 w-10 items-center justify-center rounded-lg
+           border border-clash-cyan/20 bg-clash-cyan/10
+           text-xs font-display font-bold uppercase tracking-widest text-clash-cyan;
+  }
+
+  .duel-editor {
+    @apply min-h-48 overflow-hidden rounded-lg border border-clash-border bg-black/50;
+  }
+
+  .duel-editor-bar {
+    @apply flex items-center gap-2 border-b border-clash-border bg-clash-muted/50
+           px-3 py-2 text-xs font-display font-semibold text-clash-text;
+  }
+
+  .duel-typing {
+    @apply ml-auto text-[10px] uppercase tracking-widest text-clash-amber;
+  }
+
+  .duel-code {
+    @apply flex flex-col gap-3 p-4 font-mono text-xs text-clash-dim;
+  }
+
+  .duel-code-line {
+    width: 0;
+    max-width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    border-right: 2px solid rgba(0,229,255,0.75);
+    animation: duel-type 5s steps(28, end) infinite;
+  }
 }
 
 /* ── Scanline decoration ──────────────────────────────────────────────────── */
@@ -95,4 +136,10 @@
   background: linear-gradient(90deg, transparent, rgba(0,229,255,0.08), transparent);
   animation: scanline 10s linear infinite;
   pointer-events: none; z-index: 9999;
+}
+
+@keyframes duel-type {
+  0%, 10% { width: 0; opacity: 0.45; }
+  45%, 72% { width: 100%; opacity: 1; }
+  85%, 100% { width: 100%; opacity: 0.55; }
 }

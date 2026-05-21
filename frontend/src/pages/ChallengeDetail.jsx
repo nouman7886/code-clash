@@ -189,6 +189,9 @@ export default function ChallengeDetail() {
                       <span className="text-xs text-clash-dim font-mono">
                         {room.participants.length}/4 players
                       </span>
+                      <span className="text-xs text-clash-cyan font-mono">
+                        ID {room.code || room.id.slice(-6).toUpperCase()}
+                      </span>
                     </div>
                     <div className="flex flex-wrap gap-1.5">
                       {room.participants.map(p => (

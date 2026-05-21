@@ -42,6 +42,7 @@ model Challenge {
 // One competition session for a challenge. Max 4 participants (1 creator + 3).
 model Room {
   id          String            @id @default(cuid())
+  code        String?
   challengeId String
   challenge   Challenge         @relation(fields: [challengeId], references: [id])
   status      String            @default("waiting") // "waiting"|"active"|"ended"

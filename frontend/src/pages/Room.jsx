@@ -70,6 +70,7 @@ export default function Room() {
   const [running, setRunning] = useState(false);
 
   const [selectedUser, setSelected] = useState(null);
+  const [selectedSubmissionId, setSelectedSubmissionId] = useState(null);
   const [activePanel, setPanel] = useState('challenge');
   const [hasSubmitted, setSubmitted] = useState(false);
   const [subLoading, setSubLoading] = useState(false);
@@ -131,10 +132,29 @@ export default function Room() {
   useEffect(() => {
 
     api.get(`/rooms/${roomId}`)
-      .then(r => setRoom(r))
+      .then(r => {
+        setRoom(r);
+        if (r.id && r.id !== roomId) {
+          navigate(`/room/${r.id}`, { replace: true });
+        }
+      })
       .catch(() => {});
 
-  }, [roomId]);
+  }, [roomId, navigate]);
+
+  useEffect(() => {
+
+    if (room?.status !== 'ended') return;
+
+    api.get(`/submissions/room/${roomId}`)
+      .then(subs => {
+        setSubmissions(subs);
+        setSelectedSubmissionId(current => current || subs[0]?.id || subs[0]?.userId || null);
+        setPanel('solutions');
+      })
+      .catch(() => {});
+
+  }, [room?.status, roomId]);
 
   useEffect(() => {
 
@@ -268,13 +288,14 @@ export default function Room() {
       }))
     );
 
-    socket.on('room-ended', ({ endedAt }) =>
+    socket.on('room-ended', ({ endedAt }) => {
       setRoom(p => ({
         ...p,
         status: 'ended',
         endedAt
-      }))
-    );
+      }));
+      setPanel('solutions');
+    });
 
     socket.on('room-deleted', () => {
       alert('This room was deleted by the admin.');
@@ -414,19 +435,19 @@ export default function Room() {
 
   }
 
-  async function shareRoom() {
+  async function copyRoomId() {
 
-    const link = window.location.href;
+    const code = room?.code || roomId;
 
     try {
 
-      await navigator.clipboard.writeText(link);
+      await navigator.clipboard.writeText(code);
 
-      alert('Room link copied!');
+      alert(`Room ID copied: ${code}`);
 
     } catch {
 
-      prompt('Copy this link:', link);
+      prompt('Copy this room ID:', code);
 
     }
 
@@ -437,6 +458,20 @@ export default function Room() {
     try {
 
       await api.post(`/rooms/${roomId}/start`);
+
+    } catch (err) {
+
+      setError(err.message);
+
+    }
+
+  }
+
+  async function endRoom() {
+
+    try {
+
+      await api.post(`/rooms/${roomId}/end`);
 
     } catch (err) {
 
@@ -500,6 +535,13 @@ export default function Room() {
     room?.status || 'waiting';
 
   const participantCount = participants.length;
+  const roomCode = room?.code || roomId;
+  const panels = roomStatus === 'ended'
+    ? ['challenge', 'leaderboard', 'solutions']
+    : ['challenge', 'leaderboard'];
+  const selectedSubmission =
+    submissions.find(s => (s.id || s.userId) === selectedSubmissionId) ||
+    submissions[0];
 
   if (loading) {
     return <div className="p-10 text-white">Loading...</div>;
@@ -527,10 +569,10 @@ export default function Room() {
         <Timer startedAt={room?.startedAt} status={roomStatus} />
 
         <button
-          onClick={shareRoom}
+          onClick={copyRoomId}
           className="btn-secondary text-xs py-2 px-4"
         >
-          🔗 Share
+          ID {roomCode}
         </button>
 
         <button
@@ -555,6 +597,15 @@ export default function Room() {
               : subLoading
                 ? 'Submitting…'
                 : '🚀 Submit'}
+          </button>
+        )}
+
+        {isCreator && roomStatus === 'active' && (
+          <button
+            onClick={endRoom}
+            className="btn-secondary text-xs py-2 px-4"
+          >
+            End Room
           </button>
         )}
 
@@ -666,16 +717,16 @@ export default function Room() {
                   value={viewing.code || ''}
                   language={viewing.language || 'python'}
                   readOnly
-                  blurred
+                  blurred={roomStatus !== 'ended'}
                   isTyping={viewing.isTyping}
-                  label={`${viewing.displayName}'s live code`}
+                  label={`${viewing.displayName}'s ${roomStatus === 'ended' ? 'code' : 'live code'}`}
                 />
               </section>
             )}
 
             <section className="rounded-xl border border-clash-border bg-clash-surface">
               <div className="flex border-b border-clash-border">
-                {['challenge', 'leaderboard'].map(panel => (
+                {panels.map(panel => (
                   <button
                     key={panel}
                     type="button"
@@ -691,7 +742,7 @@ export default function Room() {
               </div>
 
               <div className="p-4">
-                {activePanel === 'challenge' ? (
+                {activePanel === 'challenge' && (
                   <div className="space-y-4">
                     <div>
                       <h2 className="font-display font-bold text-base text-clash-text">
@@ -708,8 +759,45 @@ export default function Room() {
                       </div>
                     )}
                   </div>
-                ) : (
+                )}
+
+                {activePanel === 'leaderboard' && (
                   <Leaderboard submissions={submissions} currentUserId={user?.id} />
+                )}
+
+                {activePanel === 'solutions' && (
+                  <div className="space-y-3">
+                    {submissions.length === 0 ? (
+                      <p className="text-sm text-clash-dim">No submitted code to show.</p>
+                    ) : (
+                      <>
+                        <div className="flex flex-wrap gap-2">
+                          {submissions.map(s => (
+                            <button
+                              key={s.id || s.userId}
+                              type="button"
+                              onClick={() => setSelectedSubmissionId(s.id || s.userId)}
+                              className={`rounded-lg border px-3 py-1.5 text-xs font-display font-semibold transition-all
+                              ${(selectedSubmission?.id || selectedSubmission?.userId) === (s.id || s.userId)
+                                ? 'border-clash-cyan/50 bg-clash-cyan/10 text-clash-cyan'
+                                : 'border-clash-border text-clash-dim hover:border-clash-cyan/30'}`}
+                            >
+                              #{s.rank || submissions.indexOf(s) + 1} {s.displayName}
+                            </button>
+                          ))}
+                        </div>
+
+                        <div className="h-80 rounded-xl border border-clash-border bg-clash-bg p-2">
+                          <CodeEditor
+                            value={selectedSubmission?.code || ''}
+                            language={selectedSubmission?.language || 'python'}
+                            readOnly
+                            label={`${selectedSubmission?.displayName || 'Player'}'s submitted code`}
+                          />
+                        </div>
+                      </>
+                    )}
+                  </div>
                 )}
               </div>
             </section>

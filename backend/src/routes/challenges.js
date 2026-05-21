@@ -16,7 +16,13 @@ router.get('/', async (req, res) => {
   try {
     // Fetch all, filter in JS (SQLite has no full-text search)
     const all = await prisma.challenge.findMany({
-      include: { creator: { select: { id: true, displayName: true } } },
+      include: {
+        creator: { select: { id: true, displayName: true } },
+        rooms: {
+          where: { status: { in: ['waiting', 'active'] } },
+          select: { id: true, code: true, status: true },
+        },
+      },
       orderBy: { createdAt: 'desc' },
     });
 

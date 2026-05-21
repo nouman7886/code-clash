@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DifficultyBadge, TagBadge } from './Badges';
+import LanguageBadges from './LanguageBadges';
 
 export default function ChallengeCard({ challenge }) {
   const navigate = useNavigate();
@@ -24,6 +25,10 @@ export default function ChallengeCard({ challenge }) {
       </div>
 
       <p className="text-sm text-clash-dim leading-relaxed mb-4 line-clamp-3">{preview}</p>
+
+      <div className="mb-4">
+        <LanguageBadges compact />
+      </div>
 
       {tags?.length > 0 && (
         <div className="flex flex-wrap gap-1.5 mb-4">

@@ -47,7 +47,7 @@ export default function CreateChallenge() {
       setTags(res.tags || []);
       setStep('confirm');
     } catch {
-      setError('AI analysis failed — set difficulty and tags manually.');
+      setError('AI analysis failed - set difficulty and tags manually.');
       setStep('confirm');
     } finally {
       setLoading(false);
@@ -79,13 +79,13 @@ export default function CreateChallenge() {
         ← Back
       </Link>
       <h1 className="section-title mb-1">Create a Challenge</h1>
-      <p className="text-clash-dim text-sm mb-8">Write your problem — Gemini AI suggests difficulty and tags.</p>
+      <p className="text-clash-dim text-sm mb-8">Write your problem - AI suggests difficulty and tags.</p>
 
       {step === 'analysing' ? (
         <div className="text-center py-20 animate-fade-in">
           <div className="text-5xl mb-4 animate-pulse">🤖</div>
           <h3 className="font-display font-bold text-clash-cyan text-lg mb-2">Analysing your challenge…</h3>
-          <p className="text-clash-dim text-sm">Gemini is reading your problem statement</p>
+          <p className="text-clash-dim text-sm">AI is reading your problem statement</p>
           <div className="flex justify-center gap-1 mt-8">
             {[0, 1, 2].map(i => (
               <span key={i} className="w-2 h-2 rounded-full bg-clash-cyan animate-bounce"
@@ -193,7 +193,7 @@ export default function CreateChallenge() {
             <div className="flex gap-3 pt-2">
               {step === 'write' ? (
                 <button type="submit" className="btn-primary" disabled={loading}>
-                  🤖 Analyse with Gemini
+                  Analyze with AI
                 </button>
               ) : (
                 <>

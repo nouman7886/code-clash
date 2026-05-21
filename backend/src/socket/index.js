@@ -38,8 +38,15 @@ function setupSocket(io, prisma) {
       if (!roomId || !userId || !displayName) return;
 
       try {
-        const room = await prisma.room.findUnique({
-          where:   { id: roomId },
+        const requestedRoomId = roomId;
+        const normalizedCode = String(roomId).trim().toUpperCase();
+        const room = await prisma.room.findFirst({
+          where: {
+            OR: [
+              { id: requestedRoomId },
+              { code: normalizedCode },
+            ],
+          },
           include: {
             participants: {
               include: { user: { select: { id: true, displayName: true } } },
@@ -52,6 +59,7 @@ function setupSocket(io, prisma) {
         });
         if (!room) { socket.emit('error', { message: 'Room not found' }); return; }
 
+        roomId = room.id;
         socket.join(roomId);
         socket.data.roomId      = roomId;
         socket.data.userId      = userId;

@@ -17,6 +17,7 @@ const OPTS = {
 export default function CodeEditor({
   value, language = 'python', onChange, onCursorChange,
   readOnly = false, label, isTyping = false,
+  blurred = false,
 }) {
   const editorRef = useRef(null);
 
@@ -63,7 +64,15 @@ export default function CodeEditor({
         </div>
       )}
 
-      <div className="flex-1 min-h-0">
+      <div className="flex-1 min-h-0 relative">
+        {blurred && (
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-clash-bg/10 pointer-events-none">
+            <div className="px-3 py-2 rounded-lg border border-clash-amber/30 bg-clash-bg/80 text-clash-amber text-xs font-display font-semibold tracking-wide">
+              Blurred live preview
+            </div>
+          </div>
+        )}
+        <div className={`h-full ${blurred ? 'blur-sm select-none' : ''}`}>
         <Editor
           height="100%"
           language={language === 'cpp' ? 'cpp' : language}
@@ -78,6 +87,7 @@ export default function CodeEditor({
             </div>
           }
         />
+        </div>
       </div>
     </div>
   );

@@ -11,6 +11,7 @@ export default function Navbar() {
   const nav = [
     { to: '/challenges',     label: 'Browse' },
     { to: '/challenges/new', label: 'Create' },
+    { to: '/admin',          label: 'Admin' },
   ];
   const active = (path) => location.pathname.startsWith(path);
 

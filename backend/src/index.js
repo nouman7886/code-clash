@@ -15,6 +15,7 @@ const challengeRoutes  = require('./routes/challenges');
 const roomRoutes       = require('./routes/rooms');
 const submissionRoutes = require('./routes/submissions');
 const executeRoutes = require("./routes/execute");
+const adminRoutes = require('./routes/admin');
 
 // Real-time setup
 const setupSocket = require('./socket');
@@ -85,6 +86,7 @@ app.locals.io     = io;
 // ── REST Routes ───────────────────────────────────────────────────────────────
 app.use('/api/users',       userRoutes);
 app.use('/api/challenges',  challengeRoutes);
+app.use('/api/admin',       adminRoutes);
 app.use("/api/execute", executeRoutes);
 app.use('/api/rooms',       roomRoutes);
 app.use('/api/submissions', submissionRoutes);

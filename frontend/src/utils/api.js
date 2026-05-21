@@ -2,11 +2,11 @@ const BACKEND_URL =
   import.meta.env.VITE_API_URL ||
   'https://code-clash-jkdd.onrender.com';
 
-const BASE = `${BACKEND_URL.replace(/\/+$/, '').replace(/\/api$/, '')}/api`;
+export const API_BASE = `${BACKEND_URL.replace(/\/+$/, '').replace(/\/api$/, '')}/api`;
 
 async function request(method, path, body) {
 
-  const res = await fetch(`${BASE}${path}`, {
+  const res = await fetch(`${API_BASE}${path}`, {
 
     method,
 

@@ -276,6 +276,11 @@ export default function Room() {
       }))
     );
 
+    socket.on('room-deleted', () => {
+      alert('This room was deleted by the admin.');
+      navigate('/challenges');
+    });
+
     socket.on('error', ({ message }) =>
       setError(message)
     );
@@ -293,6 +298,7 @@ export default function Room() {
         'new-submission',
         'room-started',
         'room-ended',
+        'room-deleted',
         'error'
       ].forEach(e => socket.off(e));
 
@@ -300,7 +306,7 @@ export default function Room() {
 
     };
 
-  }, [roomId, user]);
+  }, [roomId, user, navigate]);
 
   const handleCodeChange = useCallback(code => {
 
@@ -493,6 +499,8 @@ export default function Room() {
   const roomStatus =
     room?.status || 'waiting';
 
+  const participantCount = participants.length;
+
   if (loading) {
     return <div className="p-10 text-white">Loading...</div>;
   }
@@ -552,13 +560,19 @@ export default function Room() {
 
       </div>
 
-      <div className="flex-1 flex overflow-hidden">
+      {(error || subError) && (
+        <div className="shrink-0 px-4 py-2 border-b border-clash-red/30 bg-clash-red/10 text-clash-red text-sm">
+          {error || subError}
+        </div>
+      )}
 
-        <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
+      <div className="flex-1 grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_390px] overflow-hidden">
 
-          <div className="shrink-0 flex items-center gap-2 px-3 py-2 border-b border-clash-border bg-clash-surface/60">
+        <div className="flex flex-col min-w-0 overflow-hidden">
 
-            <span className="text-xs text-clash-dim font-display uppercase tracking-widest">
+          <div className="shrink-0 flex items-center gap-2 px-3 py-2 border-b border-clash-border bg-clash-surface/60 overflow-x-auto">
+
+            <span className="text-xs text-clash-dim font-display uppercase tracking-widest shrink-0">
               Lang:
             </span>
 
@@ -567,7 +581,7 @@ export default function Room() {
               <button
                 key={l.value}
                 onClick={() => changeLang(l.value)}
-                className={`px-3 py-1 rounded text-xs font-display font-semibold border transition-all
+                className={`px-3 py-1 rounded text-xs font-display font-semibold border transition-all shrink-0
                 ${myLang === l.value
                   ? 'bg-clash-cyan/20 border-clash-cyan/50 text-clash-cyan'
                   : 'border-clash-border text-clash-dim hover:border-clash-cyan/20'}`}
@@ -594,8 +608,13 @@ export default function Room() {
 
           <div className="h-44 overflow-auto border-t border-clash-border bg-black p-4">
 
-            <div className="text-clash-cyan text-sm font-bold mb-2">
-              Output
+            <div className="flex items-center justify-between mb-2">
+              <div className="text-clash-cyan text-sm font-bold">
+                Output
+              </div>
+              <span className="text-xs text-clash-dim font-mono">
+                {roomStatus}
+              </span>
             </div>
 
             <pre className="text-white text-sm whitespace-pre-wrap">
@@ -605,6 +624,107 @@ export default function Room() {
           </div>
 
         </div>
+
+        <aside className="border-t xl:border-t-0 xl:border-l border-clash-border bg-clash-bg/80 overflow-y-auto">
+
+          <div className="p-4 space-y-4">
+
+            <div className="grid grid-cols-3 gap-2">
+              <div className="rounded-lg border border-clash-border bg-clash-surface p-3">
+                <div className="text-xs text-clash-dim font-display uppercase tracking-widest">Players</div>
+                <div className="text-xl font-display font-bold text-clash-cyan mt-1">{participantCount}/4</div>
+              </div>
+              <div className="rounded-lg border border-clash-border bg-clash-surface p-3">
+                <div className="text-xs text-clash-dim font-display uppercase tracking-widest">Subs</div>
+                <div className="text-xl font-display font-bold text-clash-green mt-1">{submissions.length}</div>
+              </div>
+              <div className="rounded-lg border border-clash-border bg-clash-surface p-3">
+                <div className="text-xs text-clash-dim font-display uppercase tracking-widest">Room</div>
+                <div className="text-xl font-display font-bold text-clash-amber mt-1 capitalize">{roomStatus}</div>
+              </div>
+            </div>
+
+            <section className="rounded-xl border border-clash-border bg-clash-surface p-4">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="font-display font-bold text-sm text-clash-text tracking-wide">
+                  Participants
+                </h2>
+                <span className="text-xs text-clash-dim font-mono">{others.length} viewing options</span>
+              </div>
+
+              <ParticipantList
+                participants={participants}
+                currentUserId={user?.id}
+                selectedUserId={selectedUser}
+                onSelectParticipant={setSelected}
+              />
+            </section>
+
+            {viewing && (
+              <section className="h-72 rounded-xl border border-clash-purple/30 bg-clash-surface p-2">
+                <CodeEditor
+                  value={viewing.code || ''}
+                  language={viewing.language || 'python'}
+                  readOnly
+                  blurred
+                  isTyping={viewing.isTyping}
+                  label={`${viewing.displayName}'s live code`}
+                />
+              </section>
+            )}
+
+            <section className="rounded-xl border border-clash-border bg-clash-surface">
+              <div className="flex border-b border-clash-border">
+                {['challenge', 'leaderboard'].map(panel => (
+                  <button
+                    key={panel}
+                    type="button"
+                    onClick={() => setPanel(panel)}
+                    className={`flex-1 px-3 py-2 text-xs font-display font-semibold uppercase tracking-widest transition-colors
+                    ${activePanel === panel
+                      ? 'text-clash-cyan bg-clash-cyan/10'
+                      : 'text-clash-dim hover:text-clash-text'}`}
+                  >
+                    {panel}
+                  </button>
+                ))}
+              </div>
+
+              <div className="p-4">
+                {activePanel === 'challenge' ? (
+                  <div className="space-y-4">
+                    <div>
+                      <h2 className="font-display font-bold text-base text-clash-text">
+                        {challenge?.title || 'Challenge'}
+                      </h2>
+                      <p className="text-sm text-clash-dim leading-relaxed mt-2 whitespace-pre-wrap">
+                        {challenge?.problem || 'Loading...'}
+                      </p>
+                    </div>
+
+                    {challenge?.tags?.length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {challenge.tags.map(tag => <TagBadge key={tag} tag={tag} />)}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <Leaderboard submissions={submissions} currentUserId={user?.id} />
+                )}
+              </div>
+            </section>
+
+            {isCreator && roomStatus === 'waiting' && (
+              <button
+                onClick={startRoom}
+                className="btn-primary w-full justify-center"
+              >
+                Start Room
+              </button>
+            )}
+
+          </div>
+        </aside>
       </div>
     </div>
   );

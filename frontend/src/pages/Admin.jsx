@@ -28,7 +28,11 @@ export default function Admin() {
       },
     });
 
-    const data = await res.json();
+    const text = await res.text();
+    const data = text
+      ? safeJSON(text, { error: text.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim() })
+      : {};
+
     if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
     return data;
   }
@@ -69,7 +73,11 @@ export default function Admin() {
         body: JSON.stringify({ username, password }),
       });
 
-      const data = await res.json();
+      const text = await res.text();
+      const data = text
+        ? safeJSON(text, { error: text.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim() })
+        : {};
+
       if (!res.ok) throw new Error(data.error || 'Login failed');
 
       localStorage.setItem(TOKEN_KEY, data.token);
@@ -79,6 +87,14 @@ export default function Admin() {
       setError(err.message || 'Login failed');
     } finally {
       setLoading(false);
+    }
+  }
+
+  function safeJSON(text, fallback) {
+    try {
+      return JSON.parse(text);
+    } catch {
+      return fallback;
     }
   }
 

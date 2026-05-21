@@ -1,6 +1,8 @@
 // ── Code Clash — Backend Entry Point ─────────────────────────────────────────
 require('dotenv').config();
 
+const { execFileSync } = require('child_process');
+const path          = require('path');
 const express      = require('express');
 const { createServer } = require('http');
 const { Server }   = require('socket.io');
@@ -16,6 +18,20 @@ const executeRoutes = require("./routes/execute");
 
 // Real-time setup
 const setupSocket = require('./socket');
+
+function ensureDatabase() {
+  if (process.env.SKIP_PRISMA_PUSH === 'true') return;
+
+  const npx = process.platform === 'win32' ? 'npx.cmd' : 'npx';
+
+  execFileSync(npx, ['prisma', 'db', 'push', '--skip-generate'], {
+    cwd: path.resolve(__dirname, '..'),
+    stdio: 'inherit',
+    env: process.env,
+  });
+}
+
+ensureDatabase();
 
 const normalizeOrigin = value => {
   if (!value) return '';

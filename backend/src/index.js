@@ -23,9 +23,9 @@ const setupSocket = require('./socket');
 function ensureDatabase() {
   if (process.env.SKIP_PRISMA_PUSH === 'true') return;
 
-  const npx = process.platform === 'win32' ? 'npx.cmd' : 'npx';
+  const prismaCli = require.resolve('prisma/build/index.js');
 
-  execFileSync(npx, ['prisma', 'db', 'push', '--skip-generate'], {
+  execFileSync(process.execPath, [prismaCli, 'db', 'push', '--skip-generate'], {
     cwd: path.resolve(__dirname, '..'),
     stdio: 'inherit',
     env: process.env,
